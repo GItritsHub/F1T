@@ -6,8 +6,8 @@ from threading import Thread, Lock
 import pickle
 from pathlib import Path
 
-VIDEO_WIDTH = 1920
-VIDEO_HEIGHT = 1080
+VIDEO_WIDTH = 1280
+VIDEO_HEIGHT = 720
 path = Path(__file__).parent
 
 def gstreamer_pipeline(
