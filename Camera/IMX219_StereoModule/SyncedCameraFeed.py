@@ -6,8 +6,8 @@ from threading import Thread, Lock
 import pickle
 from pathlib import Path
 
-VIDEO_WIDTH = 1920
-VIDEO_HEIGHT = 1080
+VIDEO_WIDTH = 1280
+VIDEO_HEIGHT = 720
 path = Path(__file__).parent
 
 def gstreamer_pipeline(
@@ -119,7 +119,6 @@ def show_dual_camera():
     cv2.destroyAllWindows()
 
 def undistort_frame(cap, frame, x, y, w, h):
-    x, y, w, h = int(x/4), int(y/4), int(w/4), int(h/4)
     mapx, mapy = cv2.initUndistortRectifyMap(cap.cameraMatrix, cap.dist, None, cap.newCameraMatrix, (VIDEO_WIDTH,VIDEO_HEIGHT), 5)
     undist = cv2.remap(frame, mapx, mapy, cv2.INTER_LINEAR)
     return undist[y:y+h, x:x+w]

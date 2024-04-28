@@ -3,8 +3,8 @@ import sys
 from Camera.IMX219_StereoModule.SyncedCameraFeed import gstreamer_pipeline
 from pathlib import Path
 
-VIDEO_WIDTH = 1920
-VIDEO_HEIGHT = 1020
+VIDEO_WIDTH = 1280
+VIDEO_HEIGHT = 720
 path = Path(__file__).parent
 
 def run_calibration(sensor_id=0):
