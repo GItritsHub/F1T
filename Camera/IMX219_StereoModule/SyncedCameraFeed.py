@@ -4,16 +4,18 @@ import datetime
 import time
 from threading import Thread, Lock
 import pickle
+from pathlib import Path
 
-VIDEO_WIDTH = 1280
-VIDEO_HEIGHT = 720
+VIDEO_WIDTH = 1920
+VIDEO_HEIGHT = 1080
+path = Path(__file__).parent
 
 def gstreamer_pipeline(
         sensor_id = 0, 
         capture_width=VIDEO_WIDTH,
         capture_heigt=VIDEO_HEIGHT,
-        display_width=int(VIDEO_WIDTH),
-        display_height=int(VIDEO_HEIGHT),
+        display_width=int(VIDEO_WIDTH/4),
+        display_height=int(VIDEO_HEIGHT/4),
         framerate=30,
         flip_method=2
     ):
@@ -87,22 +89,22 @@ class VideoStream:
     
 
 def show_dual_camera():
-    cap0 = VideoStream(0, './F1T/IMX219_StereoModule/calibration0.pkl').start()
-    cap1 = VideoStream(1, './F1T/IMX219_StereoModule/calibration1.pkl').start()
+    cap0 = VideoStream(0, f'{path}/CameraCalibration/calibration0.pkl').start()
+    cap1 = VideoStream(1, f'{path}/CameraCalibration/calibration1.pkl').start()
 
     while cap0.isOpened() and cap1.isOpened():
         ret0, frame0 = cap0.read()
         ret1, frame1 = cap1.read()
     
         if ret0 and ret1:
-            mapx0, mapy0 = cv2.initUndistortRectifyMap(cap0.cameraMatrix, cap0.dist, None, cap0.newCameraMatrix, (VIDEO_WIDTH,VIDEO_HEIGHT), 5)
-            mapx1, mapy1 = cv2.initUndistortRectifyMap(cap1.cameraMatrix, cap1.dist, None, cap1.newCameraMatrix, (VIDEO_WIDTH,VIDEO_HEIGHT), 5)
-            undistorted_frame0 = cv2.remap(frame0, mapx0, mapy0, cv2.INTER_LINEAR)
-            undistorted_frame1 = cv2.remap(frame1, mapx1, mapy1, cv2.INTER_LINEAR)
-            x0, y0, w0, h0 = cap0.roi
+            x0, y0, w0, h0 = cap0.roi #whether to use cap0 or cap1 is dictated by your case.
+            # mapx0, mapy0 = cv2.initUndistortRectifyMap(cap0.cameraMatrix, cap0.dist, None, cap0.newCameraMatrix, (VIDEO_WIDTH,VIDEO_HEIGHT), 5)
+            # mapx1, mapy1 = cv2.initUndistortRectifyMap(cap1.cameraMatrix, cap1.dist, None, cap1.newCameraMatrix, (VIDEO_WIDTH,VIDEO_HEIGHT), 5)
+            # undistorted_frame0 = cv2.remap(frame0, mapx0, mapy0, cv2.INTER_LINEAR)
+            # undistorted_frame1 = cv2.remap(frame1, mapx1, mapy1, cv2.INTER_LINEAR)
             
-            undistorted_frame0 = undistorted_frame0[y0:y0+h0, x0:x0+w0]
-            undistorted_frame1 = undistorted_frame1[y0:y0+h0, x0:x0+w0]
+            undistorted_frame0 = undistort_frame(cap0, frame0, x0, y0, w0, h0)
+            undistorted_frame1 = undistort_frame(cap1, frame1, x0, y0, w0, h0)
 
             synced_frames = np.hstack((undistorted_frame0, undistorted_frame1))
             cv2.imshow('undist1', synced_frames)
@@ -110,11 +112,17 @@ def show_dual_camera():
                             
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-        
+
     #release capture
     cap0.release()
     cap1.release()
     cv2.destroyAllWindows()
+
+def undistort_frame(cap, frame, x, y, w, h):
+    x, y, w, h = int(x/4), int(y/4), int(w/4), int(h/4)
+    mapx, mapy = cv2.initUndistortRectifyMap(cap.cameraMatrix, cap.dist, None, cap.newCameraMatrix, (VIDEO_WIDTH,VIDEO_HEIGHT), 5)
+    undist = cv2.remap(frame, mapx, mapy, cv2.INTER_LINEAR)
+    return undist[y:y+h, x:x+w]
 
 
 if __name__ == '__main__':

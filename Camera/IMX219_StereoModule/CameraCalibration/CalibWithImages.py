@@ -19,7 +19,7 @@ objp = objp * size_of_chessboard_squares_mm
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
-images = glob.glob(f'./F1T/IMX219_StereoModule/images_sensorid{sensor_id}/*.png')
+images = glob.glob(f'./F1T/Camera/IMX219_StereoModule/images_sensorid{sensor_id}/*.png')
 
 for image in images:
 
